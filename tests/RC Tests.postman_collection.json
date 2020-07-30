@@ -6,439 +6,908 @@
 	},
 	"item": [
 		{
-			"name": "Get status",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://10.9.8.152:8080/rc/nbi",
-					"protocol": "http",
-					"host": [
-						"10",
-						"9",
-						"8",
-						"152"
-					],
-					"port": "8080",
-					"path": [
-						"rc",
-						"nbi"
-					]
+			"name": "1st integration",
+			"item": [
+				{
+					"name": "Get status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Application Day2 Config Init",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'; \",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"';  \"\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/application/day2/configuration",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"application",
+								"day2",
+								"configuration"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Application Day2 Config Get",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/application/day2/configuration/b98afb73-6ebd-41ef-b02d-97255f478ad1",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"application",
+								"day2",
+								"configuration",
+								"b98afb73-6ebd-41ef-b02d-97255f478ad1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Application Day2 Config Start",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/application/day2/configuration/3623db2a-cda3-4f46-a842-9d114dba5bc0/start",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"application",
+								"day2",
+								"configuration",
+								"3623db2a-cda3-4f46-a842-9d114dba5bc0",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Application Day2 Config Reset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/application/day2/configuration/3623db2a-cda3-4f46-a842-9d114dba5bc0/reset",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"application",
+								"day2",
+								"configuration",
+								"3623db2a-cda3-4f46-a842-9d114dba5bc0",
+								"reset"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Infrastructure Day2 Config Init",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"infrastructureMetricsInfo\": [\n\t\t{\n\t\t\t\"metricId\": \"example\",\n\t\t\t\"topic\": \"uc.4.spain_5tonic.infrastructure_metric.expb_metricId\",\n\t\t\t\"site\": \"SPAIN_5TONIC\",\n\t\t\t\"unit\": \"expb_metricUnit\",\n\t\t\t\"interval\": \"5s\", \n\t\t\t\"deviceId\": \"vnf1\"\n\t\t}\n\t]\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/infrastructure/day2/configuration",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"infrastructure",
+								"day2",
+								"configuration"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Infrastructure Day2 Config Get",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/infrastructure/day2/configuration/<id>",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"infrastructure",
+								"day2",
+								"configuration",
+								"<id>"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Infrastructure Day2 Config Start",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/infrastructure/day2/configuration/829b83ac-4ca4-4fa9-9e05-3a43ea9ebc76/start",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"infrastructure",
+								"day2",
+								"configuration",
+								"829b83ac-4ca4-4fa9-9e05-3a43ea9ebc76",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Infrastructure Day2 Config Stop",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/infrastructure/day2/configuration/829b83ac-4ca4-4fa9-9e05-3a43ea9ebc76/stop",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"infrastructure",
+								"day2",
+								"configuration",
+								"829b83ac-4ca4-4fa9-9e05-3a43ea9ebc76",
+								"stop"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execution Init",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"execScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"ls /home/user > /home/user/ls-result\\\"';\"\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/execution",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"execution"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execution Get",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/execution/638d760e-744c-4cad-b2d9-f2194405560f",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"execution",
+								"638d760e-744c-4cad-b2d9-f2194405560f"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execution Start",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/execution/0ee615fa-6766-4599-9028-0e2f9f76e1f7/start",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"execution",
+								"0ee615fa-6766-4599-9028-0e2f9f76e1f7",
+								"start"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
-			"name": "Application Day2 Config Init",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'; \",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"';  \"\n}"
+			"name": "2nd integration",
+			"item": [
+				{
+					"name": "Get status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi"
+							]
+						}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://10.9.8.152:8080/rc/nbi/application/day2/configuration",
-					"protocol": "http",
-					"host": [
-						"10",
-						"9",
-						"8",
-						"152"
-					],
-					"port": "8080",
-					"path": [
-						"rc",
-						"nbi",
-						"application",
-						"day2",
-						"configuration"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Application Day2 Config Get",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+				{
+					"name": "Application Day2 Config Init",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"configurationScript\": \"EXECUTE_COMMAND 10.9.8.208 user:root touch /home/user/file1; EXECUTE_COMMAND 10.9.8.208 user:root touch /home/user/file2;\",\n\t\"resetConfigScript\": \"EXECUTE_COMMAND 10.9.8.208 user:root rm /home/user/file1; EXECUTE_COMMAND 10.9.8.208 user:root rm /home/user/file2;\"\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/application/day2/configuration",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"application",
+								"day2",
+								"configuration"
+							]
+						}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://10.9.8.152:8080/rc/nbi/application/day2/configuration/b98afb73-6ebd-41ef-b02d-97255f478ad1",
-					"protocol": "http",
-					"host": [
-						"10",
-						"9",
-						"8",
-						"152"
-					],
-					"port": "8080",
-					"path": [
-						"rc",
-						"nbi",
-						"application",
-						"day2",
-						"configuration",
-						"b98afb73-6ebd-41ef-b02d-97255f478ad1"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Application Day2 Config Start",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+				{
+					"name": "Application Day2 Config Get",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/application/day2/configuration/b98afb73-6ebd-41ef-b02d-97255f478ad1",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"application",
+								"day2",
+								"configuration",
+								"b98afb73-6ebd-41ef-b02d-97255f478ad1"
+							]
+						}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://10.9.8.152:8080/rc/nbi/application/day2/configuration/3623db2a-cda3-4f46-a842-9d114dba5bc0/start",
-					"protocol": "http",
-					"host": [
-						"10",
-						"9",
-						"8",
-						"152"
-					],
-					"port": "8080",
-					"path": [
-						"rc",
-						"nbi",
-						"application",
-						"day2",
-						"configuration",
-						"3623db2a-cda3-4f46-a842-9d114dba5bc0",
-						"start"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Application Day2 Config Reset",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+				{
+					"name": "Application Day2 Config Start",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/application/day2/configuration/3623db2a-cda3-4f46-a842-9d114dba5bc0/start",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"application",
+								"day2",
+								"configuration",
+								"3623db2a-cda3-4f46-a842-9d114dba5bc0",
+								"start"
+							]
+						}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://10.9.8.152:8080/rc/nbi/application/day2/configuration/3623db2a-cda3-4f46-a842-9d114dba5bc0/reset",
-					"protocol": "http",
-					"host": [
-						"10",
-						"9",
-						"8",
-						"152"
-					],
-					"port": "8080",
-					"path": [
-						"rc",
-						"nbi",
-						"application",
-						"day2",
-						"configuration",
-						"3623db2a-cda3-4f46-a842-9d114dba5bc0",
-						"reset"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Infrastructure Day2 Config Init",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"infrastructureMetricsInfo\": [\n\t\t{\n\t\t\t\"metricId\": \"example\",\n\t\t\t\"topic\": \"uc.4.spain_5tonic.infrastructure_metric.expb_metricId\",\n\t\t\t\"site\": \"SPAIN_5TONIC\",\n\t\t\t\"unit\": \"expb_metricUnit\",\n\t\t\t\"interval\": \"5s\", \n\t\t\t\"deviceId\": \"vnf1\"\n\t\t}\n\t]\n}"
+				{
+					"name": "Application Day2 Config Reset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/application/day2/configuration/3623db2a-cda3-4f46-a842-9d114dba5bc0/reset",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"application",
+								"day2",
+								"configuration",
+								"3623db2a-cda3-4f46-a842-9d114dba5bc0",
+								"reset"
+							]
+						}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://10.9.8.152:8080/rc/nbi/infrastructure/day2/configuration",
-					"protocol": "http",
-					"host": [
-						"10",
-						"9",
-						"8",
-						"152"
-					],
-					"port": "8080",
-					"path": [
-						"rc",
-						"nbi",
-						"infrastructure",
-						"day2",
-						"configuration"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Infrastructure Day2 Config Get",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
+				{
+					"name": "Infrastructure Day2 Config Init",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"infrastructureMetricsInfo\": [\n\t\t{\n\t\t\t\"metricId\": \"example\",\n\t\t\t\"metricType\": \"CPU_CONSUMPTION\",\n\t\t\t\"topic\": \"uc1.20.spain_5tonic.infrastructure_metric.example\",\n\t\t\t\"site\": \"SPAIN_5TONIC\",\n\t\t\t\"unit\": \"expb_metricUnit\",\n\t\t\t\"interval\": \"5s\", \n\t\t\t\"deviceId\": \"vnf1\"\n\t\t}\n\t]\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/infrastructure/day2/configuration",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"infrastructure",
+								"day2",
+								"configuration"
+							]
+						}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://10.9.8.152:8080/rc/nbi/infrastructure/day2/configuration/<id>",
-					"protocol": "http",
-					"host": [
-						"10",
-						"9",
-						"8",
-						"152"
-					],
-					"port": "8080",
-					"path": [
-						"rc",
-						"nbi",
-						"infrastructure",
-						"day2",
-						"configuration",
-						"<id>"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Infrastructure Day2 Config Start",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
+				{
+					"name": "Infrastructure Day2 Config Get",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/infrastructure/day2/configuration/<id>",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"infrastructure",
+								"day2",
+								"configuration",
+								"<id>"
+							]
+						}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://10.9.8.152:8080/rc/nbi/infrastructure/day2/configuration/829b83ac-4ca4-4fa9-9e05-3a43ea9ebc76/start",
-					"protocol": "http",
-					"host": [
-						"10",
-						"9",
-						"8",
-						"152"
-					],
-					"port": "8080",
-					"path": [
-						"rc",
-						"nbi",
-						"infrastructure",
-						"day2",
-						"configuration",
-						"829b83ac-4ca4-4fa9-9e05-3a43ea9ebc76",
-						"start"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Infrastructure Day2 Config Stop",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
+				{
+					"name": "Infrastructure Day2 Config Start",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/infrastructure/day2/configuration/829b83ac-4ca4-4fa9-9e05-3a43ea9ebc76/start",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"infrastructure",
+								"day2",
+								"configuration",
+								"829b83ac-4ca4-4fa9-9e05-3a43ea9ebc76",
+								"start"
+							]
+						}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://10.9.8.152:8080/rc/nbi/infrastructure/day2/configuration/829b83ac-4ca4-4fa9-9e05-3a43ea9ebc76/stop",
-					"protocol": "http",
-					"host": [
-						"10",
-						"9",
-						"8",
-						"152"
-					],
-					"port": "8080",
-					"path": [
-						"rc",
-						"nbi",
-						"infrastructure",
-						"day2",
-						"configuration",
-						"829b83ac-4ca4-4fa9-9e05-3a43ea9ebc76",
-						"stop"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Execution Init",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"execScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"ls /home/user > /home/user/ls-result\\\"';\"\n}"
+				{
+					"name": "Infrastructure Day2 Config Stop",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/infrastructure/day2/configuration/829b83ac-4ca4-4fa9-9e05-3a43ea9ebc76/stop",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"infrastructure",
+								"day2",
+								"configuration",
+								"829b83ac-4ca4-4fa9-9e05-3a43ea9ebc76",
+								"stop"
+							]
+						}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://10.9.8.152:8080/rc/nbi/execution",
-					"protocol": "http",
-					"host": [
-						"10",
-						"9",
-						"8",
-						"152"
-					],
-					"port": "8080",
-					"path": [
-						"rc",
-						"nbi",
-						"execution"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Execution Get",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+				{
+					"name": "Execution Init",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"execScript\": \"EXECUTE_COMMAND 10.9.8.208 user:root ls /home/user > /home/user/ls-result;\"\n}\n"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/execution",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"execution"
+							]
+						}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://10.9.8.152:8080/rc/nbi/execution/638d760e-744c-4cad-b2d9-f2194405560f",
-					"protocol": "http",
-					"host": [
-						"10",
-						"9",
-						"8",
-						"152"
-					],
-					"port": "8080",
-					"path": [
-						"rc",
-						"nbi",
-						"execution",
-						"638d760e-744c-4cad-b2d9-f2194405560f"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Execution Start",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+				{
+					"name": "Execution Get",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/execution/638d760e-744c-4cad-b2d9-f2194405560f",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"execution",
+								"638d760e-744c-4cad-b2d9-f2194405560f"
+							]
+						}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://10.9.8.152:8080/rc/nbi/execution/0ee615fa-6766-4599-9028-0e2f9f76e1f7/start",
-					"protocol": "http",
-					"host": [
-						"10",
-						"9",
-						"8",
-						"152"
-					],
-					"port": "8080",
-					"path": [
-						"rc",
-						"nbi",
-						"execution",
-						"0ee615fa-6766-4599-9028-0e2f9f76e1f7",
-						"start"
-					]
+				{
+					"name": "Execution Start",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"configurationScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"touch /home/user/file2\\\"'\",\n\t\"resetConfigScript\": \"[ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file1\\\"'; [ ! -e hosts ] || rm hosts && touch hosts && echo \\\"server ansible_host=10.9.8.205 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\\\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\\\"rm /home/user/file2\\\"'\"\n}"
+						},
+						"url": {
+							"raw": "http://10.9.8.152:8080/rc/nbi/execution/0ee615fa-6766-4599-9028-0e2f9f76e1f7/start",
+							"protocol": "http",
+							"host": [
+								"10",
+								"9",
+								"8",
+								"152"
+							],
+							"port": "8080",
+							"path": [
+								"rc",
+								"nbi",
+								"execution",
+								"0ee615fa-6766-4599-9028-0e2f9f76e1f7",
+								"start"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "1671e34a-d7c6-463f-b072-edea1c93e403",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "ecfae337-3eae-4b43-926c-556cdf5113bd",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
 		}
 	],
 	"protocolProfileBehavior": {}

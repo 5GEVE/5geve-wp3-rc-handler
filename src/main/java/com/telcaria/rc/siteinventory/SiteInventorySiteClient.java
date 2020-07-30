@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
-@FeignClient(name ="SiteInventorySiteClient", url = "http://localhost:8087/sites/search/findByNameIgnoreCase")
+@FeignClient(name ="SiteInventorySiteClient", url = "http://${inventory.ip.address}:8087/sites/search/findByNameIgnoreCase")
 public interface SiteInventorySiteClient {
 
   // E.g. "http://localhost:8080/users/search/findByName?name=test"

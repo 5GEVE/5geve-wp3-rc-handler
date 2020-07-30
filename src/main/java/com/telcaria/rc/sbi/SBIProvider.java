@@ -21,4 +21,6 @@ public interface SBIProvider {
 
   void stop(
       InfrastructureDay2ConfigurationEntityWrapper infrastructureDay2Configuration);
+
+  AnsibleCommand parseScript(String string);
 }

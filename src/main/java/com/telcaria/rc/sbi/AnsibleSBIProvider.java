@@ -1,5 +1,6 @@
 package com.telcaria.rc.sbi;
 
+import com.telcaria.rc.core.events.AnsibleEventResponse;
 import com.telcaria.rc.core.events.ApplicationEventResponse;
 import com.telcaria.rc.core.events.ExecutionEventResponse;
 import com.telcaria.rc.core.events.InfrastructureEventResponse;
@@ -10,6 +11,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,14 +24,15 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class AnsibleSBIProvider implements SBIProvider{
 
-  @Value("${ansible.user}")
-  private String user = "telcaria";
-
-  @Value("${ansible.path}")
-  private String ansiblePath = "/home/%s/5g-eve/github/5geve-rc/execute_script/ansible";
 
   @Value("${known_hosts.path}")
-  private String knownHostsPath = "/home/%s/.ssh/known_hosts";
+  private String knownHostsPath = ".ssh/known_hosts";
+
+  @Value("${ansible.playbooks.install_filebeat}")
+  private String installFilebeatPlaybook = "5geve-rc/install_filebeat/ansible/install_filebeat.yml";
+
+  @Value("${ansible.playbooks.execute_command}")
+  private String executeCommandPlaybook = "5geve-rc/execute_command/ansible/execute_command.yml";
 
   private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -43,24 +47,12 @@ public class AnsibleSBIProvider implements SBIProvider{
 
     ExecutionEventResponse executionEventResponse = new ExecutionEventResponse();
     executionEventResponse.setSuccessful(true);
-    executionEventResponse.setExecutionId(execution.getExecutionId());
+    executionEventResponse.setId(execution.getExecutionId());
     executionEventResponse.setMethod("START");
-
+    int i = 0;
     for (String script : execution.getExecScript().split(";")) {
-      if (!script.isEmpty() && !script.replaceAll("\\s+","").equals("")) {
-        AnsibleGenericParams ansibleGenericParams = new AnsibleGenericParams();
-        ansibleGenericParams.setScript(script);
-
-        if (executeAnsibleGenericTemplate(ansibleGenericParams)) {
-          if (executionEventResponse.isSuccessful()) {
-            executionEventResponse.setSuccessful(true);
-          }
-        } else {
-          executionEventResponse.setSuccessful(false);
-        }
-      }
+      executionEventResponse = (ExecutionEventResponse) launchAnsiblePlaybook(executionEventResponse, script, i++);
     }
-
     applicationEventPublisher.publishEvent(executionEventResponse);
   }
 
@@ -76,22 +68,11 @@ public class AnsibleSBIProvider implements SBIProvider{
 
     ApplicationEventResponse applicationEventResponse = new ApplicationEventResponse();
     applicationEventResponse.setSuccessful(true);
-    applicationEventResponse.setConfigId(applicationDay2Configuration.getConfigId());
+    applicationEventResponse.setId(applicationDay2Configuration.getConfigId());
     applicationEventResponse.setMethod("START");
-
+    int i = 0;
     for (String script : applicationDay2Configuration.getConfigurationScript().split(";")) {
-      if (!script.isEmpty() && !script.replaceAll("\\s+","").equals("")) {
-        AnsibleGenericParams ansibleGenericParams = new AnsibleGenericParams();
-        ansibleGenericParams.setScript(script);
-
-        if (executeAnsibleGenericTemplate(ansibleGenericParams)) {
-          if (applicationEventResponse.isSuccessful()) {
-            applicationEventResponse.setSuccessful(true);
-          }
-        } else {
-          applicationEventResponse.setSuccessful(false);
-        }
-      }
+      applicationEventResponse = (ApplicationEventResponse) launchAnsiblePlaybook(applicationEventResponse, script, i++);
     }
 
     applicationEventPublisher.publishEvent(applicationEventResponse);
@@ -103,22 +84,11 @@ public class AnsibleSBIProvider implements SBIProvider{
 
     ApplicationEventResponse applicationEventResponse = new ApplicationEventResponse();
     applicationEventResponse.setSuccessful(true);
-    applicationEventResponse.setConfigId(applicationDay2Configuration.getConfigId());
+    applicationEventResponse.setId(applicationDay2Configuration.getConfigId());
     applicationEventResponse.setMethod("RESET");
-
+    int i = 0;
     for (String script : applicationDay2Configuration.getResetConfigScript().split(";")) {
-      if (!script.isEmpty() && !script.replaceAll("\\s+","").equals("")) {
-        AnsibleGenericParams ansibleGenericParams = new AnsibleGenericParams();
-        ansibleGenericParams.setScript(script);
-
-        if (executeAnsibleGenericTemplate(ansibleGenericParams)) {
-          if (applicationEventResponse.isSuccessful()) {
-            applicationEventResponse.setSuccessful(true);
-          }
-        } else {
-          applicationEventResponse.setSuccessful(false);
-        }
-      }
+      applicationEventResponse = (ApplicationEventResponse) launchAnsiblePlaybook(applicationEventResponse, script, i++);
     }
 
     applicationEventPublisher.publishEvent(applicationEventResponse);
@@ -137,24 +107,12 @@ public class AnsibleSBIProvider implements SBIProvider{
 
     InfrastructureEventResponse infrastructureEventResponse = new InfrastructureEventResponse();
     infrastructureEventResponse.setSuccessful(true);
-    infrastructureEventResponse.setConfigId(infrastructureDay2Configuration.getConfigId());
+    infrastructureEventResponse.setId(infrastructureDay2Configuration.getConfigId());
     infrastructureEventResponse.setMethod("START");
-
+    int i = 0;
     for (String script : infrastructureDay2Configuration.getConfigurationScripts().split(";")) {
-      if (!script.isEmpty() && !script.replaceAll("\\s+","").equals("")) {
-        AnsibleGenericParams ansibleGenericParams = new AnsibleGenericParams();
-        ansibleGenericParams.setScript(script);
-
-        if (executeAnsibleGenericTemplate(ansibleGenericParams)) {
-          if (infrastructureEventResponse.isSuccessful()) {
-            infrastructureEventResponse.setSuccessful(true);
-          }
-        } else {
-          infrastructureEventResponse.setSuccessful(false);
-        }
-      }
+      infrastructureEventResponse = (InfrastructureEventResponse)launchAnsiblePlaybook(infrastructureEventResponse, script, i++);
     }
-
     applicationEventPublisher.publishEvent(infrastructureEventResponse);
   }
 
@@ -165,32 +123,50 @@ public class AnsibleSBIProvider implements SBIProvider{
 
     InfrastructureEventResponse infrastructureEventResponse = new InfrastructureEventResponse();
     infrastructureEventResponse.setSuccessful(true);
-    infrastructureEventResponse.setConfigId(infrastructureDay2Configuration.getConfigId());
+    infrastructureEventResponse.setId(infrastructureDay2Configuration.getConfigId());
     infrastructureEventResponse.setMethod("RESET");
-
+    int i = 0;
     for (String script : infrastructureDay2Configuration.getStopConfigScripts().split(";")) {
-      if (!script.isEmpty() && !script.replaceAll("\\s+","").equals("")) {
-        AnsibleGenericParams ansibleGenericParams = new AnsibleGenericParams();
-        ansibleGenericParams.setScript(script);
+      infrastructureEventResponse = (InfrastructureEventResponse) launchAnsiblePlaybook(infrastructureEventResponse, script, i++);
+    }
+    applicationEventPublisher.publishEvent(infrastructureEventResponse);
+  }
 
-        if (executeAnsibleGenericTemplate(ansibleGenericParams)) {
-          if (infrastructureEventResponse.isSuccessful()) {
-            infrastructureEventResponse.setSuccessful(true);
-          }
-        } else {
-          infrastructureEventResponse.setSuccessful(false);
+  private AnsibleEventResponse launchAnsiblePlaybook(AnsibleEventResponse ansibleEventResponse,
+      String script, int order) {
+    if (!script.isEmpty() && !script.replaceAll("\\s+","").equals("")) {
+      AnsibleCommand ansibleCommand = parseScript(script);
+      AnsibleGenericParams ansibleGenericParams = new AnsibleGenericParams();
+      if (ansibleCommand != null) {
+        ansibleCommand.setId(ansibleEventResponse.getId()+"-"+order); // use the <config/executionId>-<number> format
+        if (ansibleCommand instanceof InstallFilebeatWrapper) {
+          script = ansibleCommand.generateAnsibleCommand("/usr/bin/rc/"+installFilebeatPlaybook);
+        } else if (ansibleCommand instanceof SleepWrapper) {
+          script = ansibleCommand.generateAnsibleCommand(null);
+        } else if (ansibleCommand instanceof ExecuteCommandWrapper) {
+          script = ansibleCommand.generateAnsibleCommand("/usr/bin/rc/"+executeCommandPlaybook);
         }
+      } else { // parsing error
+        log.error(String.format("parsing error in script: %s", script));
+        ansibleEventResponse.setSuccessful(false);
+        return ansibleEventResponse;
+      }
+
+      ansibleGenericParams.setScript(script);
+
+      if (!executeAnsibleGenericTemplate(ansibleGenericParams)) {
+        ansibleEventResponse.setSuccessful(false);
+        log.error(String.format("Error executing: %s",script));
       }
     }
-
-    applicationEventPublisher.publishEvent(infrastructureEventResponse);
+    return ansibleEventResponse;
   }
 
   private boolean executeAnsibleGenericTemplate(AnsibleGenericParams ansibleGenericParams) {
     // Make sure you have this repository in your $HOME:
     // https://github.com/5GEVE/5geve-rc
     boolean success = false;
-    String path = String.format(ansiblePath, user);
+    String path = System.getProperty("user.dir"); // use the path where the jar is executing
 
     int exitVal = -1;
 
@@ -205,7 +181,7 @@ public class AnsibleSBIProvider implements SBIProvider{
       BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
       String s = null;
       while ((s = stdInput.readLine()) != null) {
-        output.append(s + "\n");
+        output.append(s).append("\n");
       }
       exitVal = process.waitFor();
       if (exitVal == 0) {
@@ -219,7 +195,7 @@ public class AnsibleSBIProvider implements SBIProvider{
       }
 
       // Clean known_hosts file.
-      File file = new File(String.format(knownHostsPath, user));
+      File file = new File(System.getProperty("user.home")+"/"+knownHostsPath);
       if (file.delete()) {
         log.info("known_hosts file has been cleaned");
       } else {
@@ -227,8 +203,57 @@ public class AnsibleSBIProvider implements SBIProvider{
       }
 
     } catch (IOException | InterruptedException e) {
-      e.printStackTrace();
+      log.error(e.toString());
     }
     return success;
+  }
+
+  @Override
+  public AnsibleCommand parseScript(String string) {
+    // Use https://regex101.com/ to validate and debug
+    // INSTALL_FILEBEAT ((?:[0-9]{1,3}\.){3}[0-9]{1,3}) ([^:]+):([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^;]+)
+    final String installFilebeatRegex = "INSTALL_FILEBEAT ((?:[0-9]{1,3}\\.){3}[0-9]{1,3}) ([^:]+):([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^;]+)";
+    // SLEEP ([.?\d]+)
+    final String sleepRegex = "SLEEP ([.?\\d]+)";
+    // EXECUTE_COMMAND ((?:[0-9]{1,3}\.){3}[0-9]{1,3}) ([^:]+):([^ ]+) ([]+)
+    final String executeCommandRegex = "EXECUTE_COMMAND ((?:[0-9]{1,3}\\.){3}[0-9]{1,3}) ([^:]+):([^ ]+) ([^;]+)";
+
+
+    Pattern pattern = Pattern.compile(installFilebeatRegex, Pattern.MULTILINE);
+    Matcher matcher = pattern.matcher(string);
+    if (matcher.find()) { // is it an INSTALL_FILEBEAT
+      InstallFilebeatWrapper installFilebeatWrapper = new InstallFilebeatWrapper();
+      installFilebeatWrapper.setHostIpAddress(matcher.group(1));
+      installFilebeatWrapper.setUsername(matcher.group(2));
+      installFilebeatWrapper.setPassword(matcher.group(3));
+      installFilebeatWrapper.setMetric_id(matcher.group(4));
+      installFilebeatWrapper.setTopic_name(matcher.group(5));
+      installFilebeatWrapper.setBroker_ip_address(matcher.group(6));
+      installFilebeatWrapper.setUnit(matcher.group(7));
+      installFilebeatWrapper.setInterval(matcher.group(8));
+      installFilebeatWrapper.setDevice_id(matcher.group(9));
+      installFilebeatWrapper.setMonitored_file_path(matcher.group(10));
+      return installFilebeatWrapper;
+    } else {
+      pattern = Pattern.compile(sleepRegex, Pattern.MULTILINE);
+      matcher = pattern.matcher(string);
+      if (matcher.find()) { // is it an SLEEP
+        SleepWrapper sleepWrapper = new SleepWrapper();
+        sleepWrapper.setSleepTime(matcher.group(1));
+        return sleepWrapper;
+      } else {
+        pattern = Pattern.compile(executeCommandRegex, Pattern.MULTILINE);
+        matcher = pattern.matcher(string);
+        if (matcher.find()) { // is it an EXECUTE_COMMAND
+          ExecuteCommandWrapper executeCommandWrapper = new ExecuteCommandWrapper();
+          executeCommandWrapper.setHostIpAddress(matcher.group(1));
+          executeCommandWrapper.setUsername(matcher.group(2));
+          executeCommandWrapper.setPassword(matcher.group(3));
+          executeCommandWrapper.setScript(matcher.group(4));
+          return executeCommandWrapper;
+        }
+      }
+    }
+    return null;
   }
 }

@@ -24,7 +24,6 @@ import com.telcaria.rc.siteinventory.SiteInventorySiteClient;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.hateoas.CollectionModel;
@@ -42,9 +41,6 @@ public class RCServiceImpl implements RCService {
   private SiteInventorySiteClient siteInventorySiteClient;
 
   private SBIProvider sbiProvider;
-
-  @Value("${rc.testing}")
-  private String testing;
 
   @Autowired
   public RCServiceImpl(StorageService storageService,
@@ -84,16 +80,21 @@ public class RCServiceImpl implements RCService {
     ModelMapper modelMapper = new ModelMapper();
     ApplicationDay2ConfigurationEntityWrapper applicationDay2ConfigurationEntityWrapper = modelMapper
         .map(applicationDay2ConfigurationWrapper, ApplicationDay2ConfigurationEntityWrapper.class);
+    // format if necessary the configuration script
     if (applicationDay2ConfigurationEntityWrapper.getConfigurationScript() != null) {
       applicationDay2ConfigurationEntityWrapper.setConfigurationScript(applicationDay2ConfigurationEntityWrapper.getConfigurationScript().replace("\\\"", "\""));
     } else {
       applicationDay2ConfigurationEntityWrapper.setConfigurationScript("");
     }
+    applicationDay2ConfigurationEntityWrapper.setConfigurationScript(findAndReplaceSiteFacilitiesWithKafkaBroker(applicationDay2ConfigurationEntityWrapper.getConfigurationScript()));
+
+    // format if necessary the reset configuration script
     if (applicationDay2ConfigurationEntityWrapper.getResetConfigScript() != null) {
       applicationDay2ConfigurationEntityWrapper.setResetConfigScript(applicationDay2ConfigurationEntityWrapper.getResetConfigScript().replace("\\\"", "\""));
     } else {
       applicationDay2ConfigurationEntityWrapper.setResetConfigScript("");
     }
+    applicationDay2ConfigurationEntityWrapper.setResetConfigScript(findAndReplaceSiteFacilitiesWithKafkaBroker(applicationDay2ConfigurationEntityWrapper.getResetConfigScript()));
 
     return storageService.loadApplicationDay2Configuration(applicationDay2ConfigurationEntityWrapper);
   }
@@ -108,7 +109,7 @@ public class RCServiceImpl implements RCService {
     for (InfrastructureMetricWrapper infrastructureMetricWrapper : infrastructureDay2ConfigurationWrapper
         .getInfrastructureMetricsInfo()) { // Iterate InfrastructureMetricWrappers
 
-      String dataShipperId = buildDataShipperId(infrastructureMetricWrapper.getSite(), infrastructureMetricWrapper.getMetricId());
+      String dataShipperId = buildDataShipperId(infrastructureMetricWrapper.getSite(), infrastructureMetricWrapper.getMetricType(), infrastructureMetricWrapper.getMetricId());
       log.info("DataShipperId: {}", dataShipperId);
       CollectionModel<EntityModel<DataShipper>> dataShipperEntityModel = siteInventoryDataShipperClient
           .getDataShipper(dataShipperId);
@@ -134,6 +135,10 @@ public class RCServiceImpl implements RCService {
         //infrastructureDay2ConfigurationEntityWrapper.getConfigurationScripts().add(infrastructureDay2ConfigurationScripts.getConfigurationScript());
         //infrastructureDay2ConfigurationEntityWrapper.getStopConfigScripts().add(infrastructureDay2ConfigurationScripts.getStopConfigScript());
         log.info("Commands generated: {}", infrastructureDay2ConfigurationScripts.toString());
+        //infrastructureDay2ConfigurationEntityWrapper.setConfigurationScripts(infrastructureDay2ConfigurationScripts.getConfigurationScript());
+        //infrastructureDay2ConfigurationEntityWrapper.setStopConfigScripts(infrastructureDay2ConfigurationScripts.getStopConfigScript());
+
+        // The following if-else blocks are needed because there could be more than one infrastructure metric, and maybe the scripts are empty.
         if (!infrastructureDay2ConfigurationScripts.getConfigurationScript().equals("")) {
           if (infrastructureDay2ConfigurationEntityWrapper.getConfigurationScripts() == null) {
             infrastructureDay2ConfigurationEntityWrapper.setConfigurationScripts(infrastructureDay2ConfigurationScripts.getConfigurationScript().concat("; "));
@@ -153,9 +158,13 @@ public class RCServiceImpl implements RCService {
     if (infrastructureDay2ConfigurationEntityWrapper.getConfigurationScripts() == null) {
       infrastructureDay2ConfigurationEntityWrapper.setConfigurationScripts("");
     }
+    infrastructureDay2ConfigurationEntityWrapper.setConfigurationScripts(findAndReplaceSiteFacilitiesWithKafkaBroker(infrastructureDay2ConfigurationEntityWrapper.getConfigurationScripts()));
+
     if (infrastructureDay2ConfigurationEntityWrapper.getStopConfigScripts() == null) {
       infrastructureDay2ConfigurationEntityWrapper.setStopConfigScripts("");
     }
+    infrastructureDay2ConfigurationEntityWrapper.setStopConfigScripts(findAndReplaceSiteFacilitiesWithKafkaBroker(infrastructureDay2ConfigurationEntityWrapper.getStopConfigScripts()));
+
     return storageService.loadInfrastructureDay2Configuration(infrastructureDay2ConfigurationEntityWrapper);
   }
 
@@ -216,14 +225,18 @@ public class RCServiceImpl implements RCService {
 
   @Override
   public String loadExecution(ExecutionWrapper executionWrapper) {
-    ModelMapper modelMapper = new ModelMapper();
-    ExecutionEntityWrapper executionEntityWrapper = modelMapper
-        .map(executionWrapper, ExecutionEntityWrapper.class);
+
     if (executionWrapper.getExecScript() != null) {
       executionWrapper.setExecScript(executionWrapper.getExecScript().replace("\\\"", "\""));
     } else {
       executionWrapper.setExecScript("");
     }
+    executionWrapper.setExecScript(findAndReplaceSiteFacilitiesWithKafkaBroker(executionWrapper.getExecScript()));
+
+    ModelMapper modelMapper = new ModelMapper();
+    ExecutionEntityWrapper executionEntityWrapper = modelMapper
+        .map(executionWrapper, ExecutionEntityWrapper.class);
+
     return storageService.loadExecution(executionEntityWrapper);
   }
 
@@ -248,9 +261,9 @@ public class RCServiceImpl implements RCService {
   public void handleExecutionResponse(ExecutionEventResponse executionResponse) {
     if (executionResponse.getMethod().equals("START")) {
       if (executionResponse.isSuccessful()) {
-        storageService.updateExecutionStatus(executionResponse.getExecutionId(), ExecutionStatus.COMPLETED);
+        storageService.updateExecutionStatus(executionResponse.getId(), ExecutionStatus.COMPLETED);
       } else {
-        storageService.updateExecutionStatus(executionResponse.getExecutionId(), ExecutionStatus.FAILED);
+        storageService.updateExecutionStatus(executionResponse.getId(), ExecutionStatus.FAILED);
       }
     }
   }
@@ -261,18 +274,18 @@ public class RCServiceImpl implements RCService {
     if (applicationEventResponse.getMethod().equals("START")) {
       if (applicationEventResponse.isSuccessful()) {
         storageService
-            .updateApplicationDay2ConfigurationStatus(applicationEventResponse.getConfigId(),
+            .updateApplicationDay2ConfigurationStatus(applicationEventResponse.getId(),
                 Day2ConfigurationStatus.COMPLETED);
       } else {
         storageService
-            .updateApplicationDay2ConfigurationStatus(applicationEventResponse.getConfigId(),
+            .updateApplicationDay2ConfigurationStatus(applicationEventResponse.getId(),
                 Day2ConfigurationStatus.FAILED);
       }
     } else if (applicationEventResponse.getMethod().equals("RESET")) {
       if (applicationEventResponse.isSuccessful()) {
-        storageService.updateApplicationDay2ConfigurationStatus(applicationEventResponse.getConfigId(), Day2ConfigurationStatus.CLEANED);
+        storageService.updateApplicationDay2ConfigurationStatus(applicationEventResponse.getId(), Day2ConfigurationStatus.CLEANED);
       } else {
-        storageService.updateApplicationDay2ConfigurationStatus(applicationEventResponse.getConfigId(), Day2ConfigurationStatus.FAILED);
+        storageService.updateApplicationDay2ConfigurationStatus(applicationEventResponse.getId(), Day2ConfigurationStatus.FAILED);
       }
     }
   }
@@ -283,21 +296,22 @@ public class RCServiceImpl implements RCService {
       InfrastructureEventResponse infrastructureEventResponse) {
     if (infrastructureEventResponse.getMethod().equals("START")) {
       if (infrastructureEventResponse.isSuccessful()) {
-        storageService.updateInfrastructureDay2ConfigurationStatus(infrastructureEventResponse.getConfigId(), Day2ConfigurationStatus.COMPLETED);
+        storageService.updateInfrastructureDay2ConfigurationStatus(infrastructureEventResponse.getId(), Day2ConfigurationStatus.COMPLETED);
       } else {
-        storageService.updateInfrastructureDay2ConfigurationStatus(infrastructureEventResponse.getConfigId(), Day2ConfigurationStatus.FAILED);
+        storageService.updateInfrastructureDay2ConfigurationStatus(infrastructureEventResponse.getId(), Day2ConfigurationStatus.FAILED);
       }
     } else { // STOP
       if (infrastructureEventResponse.isSuccessful()) {
-        storageService.updateInfrastructureDay2ConfigurationStatus(infrastructureEventResponse.getConfigId(), Day2ConfigurationStatus.STOPPED);
+        storageService.updateInfrastructureDay2ConfigurationStatus(infrastructureEventResponse.getId(), Day2ConfigurationStatus.STOPPED);
       } else {
-        storageService.updateInfrastructureDay2ConfigurationStatus(infrastructureEventResponse.getConfigId(), Day2ConfigurationStatus.FAILED);
+        storageService.updateInfrastructureDay2ConfigurationStatus(infrastructureEventResponse.getId(), Day2ConfigurationStatus.FAILED);
       }
     }
   }
 
-  private String buildDataShipperId(String site, String metricId) {
-    return site+"."+metricId;
+  @Override
+  public String buildDataShipperId(String site, String iMetricType, String metricId) {
+    return site+"."+iMetricType+"."+metricId;
   }
 
   private InfrastructureDay2ConfigurationScripts generateInfrastructureDay2ConfigurationEntityWrapper(
@@ -350,5 +364,28 @@ public class RCServiceImpl implements RCService {
     }
     return infrastructureDay2ConfigurationScripts;
   }
+
+  @Override
+  public String findAndReplaceSiteFacilitiesWithKafkaBroker(String script) {
+    String siteName;
+    do {
+      siteName = null;
+      if (script.contains("ITALY_TURIN")) siteName="ITALY_TURIN";
+      if (script.contains("SPAIN_5TONIC")) siteName="SPAIN_5TONIC";
+      if (script.contains("FRANCE_PARIS")) siteName="FRANCE_PARIS";
+      if (script.contains("FRANCE_RENNES")) siteName="FRANCE_RENNES";
+      if (script.contains("FRANCE_NICE")) siteName="FRANCE_NICE";
+      if (script.contains("GREECE_ATHENS")) siteName="GREECE_ATHENS";
+      if (siteName != null) { // Retrieve KAFKA_BROKER_IP from iwf repository
+        CollectionModel<EntityModel<Site>> siteEntityModel = siteInventorySiteClient.getSite(siteName);
+        if (siteEntityModel != null && !siteEntityModel.getContent().isEmpty()) {
+          Site site = ((EntityModel<Site>) siteEntityModel.getContent().toArray()[0]).getContent();
+          script = script.replace(siteName, site.getKafkaIpAddress());
+        }
+      }
+    } while (siteName != null);
+    return script;
+  }
+
 
 }

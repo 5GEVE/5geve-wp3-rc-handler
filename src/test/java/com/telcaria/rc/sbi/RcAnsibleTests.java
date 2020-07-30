@@ -1,147 +1,91 @@
 package com.telcaria.rc.sbi;
 
+import static com.telcaria.rc.TestCommonData.EXECUTE_COMMAND_GENERATED_ANSIBLE_COMMAND_1;
+import static com.telcaria.rc.TestCommonData.EXECUTE_COMMAND_TCB_PING_1;
+import static com.telcaria.rc.TestCommonData.EXECUTE_COMMAND_TCB_LS_1;
+import static com.telcaria.rc.TestCommonData.INSTALL_FILEBEAT_GENERATED_ANSIBLE_COMMAND_1;
+import static com.telcaria.rc.TestCommonData.INSTALL_FILEBEAT_TCB_1;
+import static com.telcaria.rc.TestCommonData.SLEEP_GENERATED_ANSIBLE_COMMAND_1;
+import static com.telcaria.rc.TestCommonData.SLEEP_TCB_1;
+import static org.awaitility.Awaitility.await;
+
+import com.telcaria.rc.core.service.RCService;
+import com.telcaria.rc.nbi.enums.ExecutionStatus;
+import com.telcaria.rc.nbi.wrappers.ExecutionWrapper;
+
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Slf4j
 public class RcAnsibleTests {
 
+	@Autowired
+	SBIProvider sbiProvider;
+
+	@Autowired
+	RCService rcService;
+
+	@Value("${test.ansible.playbooks.path}")
+	private String playbooksPath = "/Users/aitor/telcaria-code/";
+
 	@Test
 	@Order(1)
-	public void executeAnsibleHelloWorldTemplate() {
-		// Make sure you have this repository in your $HOME:
-		// https://github.com/5GEVE/5geve-rc
-		String home = "/home/telcaria";
-		String path = home + "/5g-eve/github/5geve-rc/hello_world/ansible";
-		String ipAddress = "10.9.8.204";
-		String user = "user";
-		String password = "root";
-		String param = "5GEVE";
+	void testScriptParsing() {
 
-		int exitVal = -1;
-		ProcessBuilder hostProcessBuilder = new ProcessBuilder("bash", "-c", "touch hosts ; echo \"src_server ansible_host=" +
-						ipAddress + " ansible_user=" + user + " ansible_ssh_pass=" + password + " param=" + param +
-						"\" | tee -a hosts ; touch ansible_output; ansible-playbook -i hosts hello_world.yml");
-		hostProcessBuilder.directory(new File(path));
+		AnsibleCommand ansibleCommand = sbiProvider.parseScript(INSTALL_FILEBEAT_TCB_1);
+		ansibleCommand.setId("819c5d41-e9f6-4e10-a8b1-4df27a8c031d");
+		String command = ansibleCommand.generateAnsibleCommand(playbooksPath+"5geve-rc/filebeat_data_shipper_test/ansible");
+		assert command.equals(INSTALL_FILEBEAT_GENERATED_ANSIBLE_COMMAND_1);
 
-		try {
-			Process process = hostProcessBuilder.start();
+		ansibleCommand = sbiProvider.parseScript(SLEEP_TCB_1);
+		ansibleCommand.setId(UUID.randomUUID().toString());
+		command = ansibleCommand.generateAnsibleCommand(null);
+		assert command.equals(SLEEP_GENERATED_ANSIBLE_COMMAND_1);
 
-			StringBuilder output = new StringBuilder();
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String s = null;
-			while ((s = stdInput.readLine()) != null) {
-				output.append(s + "\n");
-			}
-			exitVal = process.waitFor();
-			if (exitVal == 0) {
-				log.info("Success!");
-				log.info(output.toString());
-			} else {
-				log.info("Failure!");
-				log.info(output.toString());
-			}
-		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		Assertions.assertTrue(exitVal == 0);
+		ansibleCommand = sbiProvider.parseScript(EXECUTE_COMMAND_TCB_PING_1);
+		ansibleCommand.setId("8600f80a-b523-4de2-a1ae-2f2deda57746");
+		command = ansibleCommand.generateAnsibleCommand(playbooksPath+"5geve-rc/execute_script/ansible");
+		assert command.equals(EXECUTE_COMMAND_GENERATED_ANSIBLE_COMMAND_1);
 
 	}
 
 	@Test
 	@Order(2)
-	public void executeAnsibleCommandTemplate() {
-		// Make sure you have this repository in your $HOME:
-		// https://github.com/5GEVE/5geve-rc
-		String home = "/home/telcaria";
-		String path = home + "/5g-eve/github/5geve-rc/execute_script/ansible";
-		String ipAddress = "10.9.8.204";
-		String user = "user";
-		String password = "root";
-		String script = "echo hello world";
+	void sleepCommandTest() {
+		ExecutionWrapper executionWrapper = new ExecutionWrapper();
+		executionWrapper.setExecScript(SLEEP_TCB_1);
 
-		int exitVal = -1;
-		ProcessBuilder hostProcessBuilder = new ProcessBuilder("bash", "-c", "[ ! -e hosts ] || rm hosts && touch hosts && " +
-				"echo \"server ansible_host=" + ipAddress + " ansible_user=" + user + " ansible_ssh_pass=" + password + " ansible_become_pass=" + password +
-				"\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\"" +
-				script + "\"'");
-		hostProcessBuilder.directory(new File(path));
+		String execId = rcService.loadExecution(executionWrapper);
+		executionWrapper.setExecutionId(execId);
+		ExecutionWrapper executionWrapperPersisted = rcService.getExecution(execId);
+		assert executionWrapperPersisted.getExecScript().equals(SLEEP_TCB_1);
 
-		try {
-			Process process = hostProcessBuilder.start();
-
-			StringBuilder output = new StringBuilder();
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String s = null;
-			while ((s = stdInput.readLine()) != null) {
-				output.append(s + "\n");
-			}
-			exitVal = process.waitFor();
-			if (exitVal == 0) {
-				System.out.println("Success!");
-				System.out.println(output);
-			} else {
-				System.out.println("Failure!");
-				System.out.println(output);
-			}
-		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		Assertions.assertTrue(exitVal == 0);
-
+		sbiProvider.start(executionWrapper);
+		await().atMost(10, TimeUnit.SECONDS).until(() -> rcService.getExecutionStatus(execId).equals(ExecutionStatus.COMPLETED));
 	}
 
 	@Test
 	@Order(3)
-	public void executeAnsibleCommandTemplateWithScript() {
-		// Make sure you have this repository in your $HOME:
-		// https://github.com/5GEVE/5geve-rc
-		String home = "/home/telcaria";
-		String path = home + "/5g-eve/github/5geve-rc/execute_script/ansible";
-		String script = "[ ! -e hosts ] || rm hosts && touch hosts && echo \"server ansible_host=10.9.8.204 ansible_user=user ansible_ssh_pass=root ansible_become_pass=root\" | tee -a hosts && touch ansible_output && ansible-playbook -i hosts execute_script.yml -e 'script=\"echo hello world\"'";
+	void ExecuteCommandTest() {
+		ExecutionWrapper executionWrapper = new ExecutionWrapper();
+		executionWrapper.setExecScript(EXECUTE_COMMAND_TCB_LS_1);
 
-		int exitVal = -1;
-		ProcessBuilder hostProcessBuilder = new ProcessBuilder("bash", "-c", script);
-		hostProcessBuilder.directory(new File(path));
+		String execId = rcService.loadExecution(executionWrapper);
+		executionWrapper.setExecutionId(execId);
+		ExecutionWrapper executionWrapperPersisted = rcService.getExecution(execId);
+		assert executionWrapperPersisted.getExecScript().equals(EXECUTE_COMMAND_TCB_LS_1);
 
-		try {
-			Process process = hostProcessBuilder.start();
-
-			StringBuilder output = new StringBuilder();
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String s = null;
-			while ((s = stdInput.readLine()) != null) {
-				output.append(s + "\n");
-			}
-			exitVal = process.waitFor();
-			if (exitVal == 0) {
-				System.out.println("Success!");
-				System.out.println(output);
-			} else {
-				System.out.println("Failure!");
-				System.out.println(output);
-			}
-		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		Assertions.assertTrue(exitVal == 0);
-
+		sbiProvider.start(executionWrapper);
+		await().atMost(10, TimeUnit.SECONDS).until(() -> rcService.getExecutionStatus(execId).equals(ExecutionStatus.COMPLETED));
 	}
-
-
 }

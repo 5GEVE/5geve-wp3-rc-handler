@@ -45,10 +45,6 @@ class StorageServiceImplTest {
     // Load Infrastructure Day2 Configuration Test
 
     InfrastructureDay2ConfigurationEntityWrapper infrastructureDay2ConfigurationWrapper = new InfrastructureDay2ConfigurationEntityWrapper();
-    //List<String> persistedConfScripts = new ArrayList<>();
-    //persistedConfScripts.add(TestCommonData.COMPLETE_CONFIG_SCRIPT_INFRA);
-    //List<String> persistedStopConfScripts = new ArrayList<>();
-    //persistedStopConfScripts.add(TestCommonData.COMPLETE_CONFIG_STOP_SCRIPT_INFRA);
     String persistedConfScripts = TestCommonData.COMPLETE_CONFIG_SCRIPT_INFRA;
     String persistedStopConfScripts = TestCommonData.COMPLETE_CONFIG_STOP_SCRIPT_INFRA;
     infrastructureDay2ConfigurationWrapper.setConfigurationScripts(persistedConfScripts);
@@ -60,10 +56,6 @@ class StorageServiceImplTest {
         .getInfrastructureDay2Configuration(configinfraId);
     assert infrastructureDay2ConfigurationPersisted != null;
 
-    //persistedConfScripts = new ArrayList<>();
-    //persistedConfScripts.add(TestCommonData.COMPLETE_CONFIG_SCRIPT_INFRA);
-    //persistedStopConfScripts = new ArrayList<>();
-    //persistedStopConfScripts.add(TestCommonData.COMPLETE_CONFIG_STOP_SCRIPT_INFRA);
     persistedConfScripts = TestCommonData.COMPLETE_CONFIG_SCRIPT_INFRA;
     persistedStopConfScripts = TestCommonData.COMPLETE_CONFIG_STOP_SCRIPT_INFRA;
     assert infrastructureDay2ConfigurationPersisted.getConfigurationScripts().equals(persistedConfScripts);

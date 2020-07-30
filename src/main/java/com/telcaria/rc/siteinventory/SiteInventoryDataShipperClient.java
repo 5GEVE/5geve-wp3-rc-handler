@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
-@FeignClient(name ="SiteInventoryDataShipperClient", url = "http://localhost:8087/dataShippers/search/findByDataShipperId")
+@FeignClient(name ="SiteInventoryDataShipperClient", url = "http://${inventory.ip.address}:8087/dataShippers/search/findByDataShipperId")
 public interface SiteInventoryDataShipperClient {
 
   // http://127.0.0.1:8087/dataShippers/search/findByDataShipperId?dataShipperId=france_nice.expb_metricId"

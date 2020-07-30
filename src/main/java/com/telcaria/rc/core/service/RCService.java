@@ -57,4 +57,8 @@ public interface RCService {
   @EventListener
   void handleInfrastructureResponse(
       InfrastructureEventResponse infrastructureEventResponse);
+
+  String buildDataShipperId(String site, String iMetricType, String metricId);
+
+  String findAndReplaceSiteFacilitiesWithKafkaBroker(String script);
 }
