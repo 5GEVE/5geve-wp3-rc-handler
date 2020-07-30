@@ -1,0 +1,390 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: "http://127.0.0.1:8080"
+  description: Generated server url
+paths:
+  /rc/nbi:
+    get:
+      tags:
+      - rcnbi-controller
+      operationId: listApiVersion
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                type: string
+  /rc/nbi/application/day2/configuration:
+    post:
+      tags:
+      - rcnbi-controller
+      operationId: applicationDay2ConfigurationInit
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationDay2ConfigurationWrapper"
+        required: true
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApplicationDay2ConfigurationResponse"
+  /rc/nbi/application/day2/configuration/{configurationId}:
+    get:
+      tags:
+      - rcnbi-controller
+      operationId: applicationDay2ConfigurationStatus
+      parameters:
+      - name: configurationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApplicationDay2ConfigurationStatusResponse"
+  /rc/nbi/execution/{executionId}/start:
+    post:
+      tags:
+      - rcnbi-controller
+      operationId: executionStart
+      parameters:
+      - name: executionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ExecutionStatusResponse"
+  /rc/nbi/execution/{executionId}/abort:
+    delete:
+      tags:
+      - rcnbi-controller
+      operationId: executionAbort
+      parameters:
+      - name: executionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ExecutionStatusResponse"
+  /rc/nbi/application/day2/configuration/{configurationId}/start:
+    post:
+      tags:
+      - rcnbi-controller
+      operationId: applicationDay2ConfigurationStart
+      parameters:
+      - name: configurationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApplicationDay2ConfigurationStatusResponse"
+  /rc/nbi/application/day2/configuration/{configurationId}/reset:
+    post:
+      tags:
+      - rcnbi-controller
+      operationId: applicationDay2ConfigurationReset
+      parameters:
+      - name: configurationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApplicationDay2ConfigurationStatusResponse"
+  /rc/nbi/application/day2/configuration/{configurationId}/abort:
+    delete:
+      tags:
+      - rcnbi-controller
+      operationId: applicationDay2ConfigurationAbort
+      parameters:
+      - name: configurationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApplicationDay2ConfigurationStatusResponse"
+  /rc/nbi/infrastructure/day2/configuration:
+    post:
+      tags:
+      - rcnbi-controller
+      operationId: infrastructureDay2ConfigurationInit
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InfrastructureDay2ConfigurationWrapper"
+        required: true
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InfrastructureDay2ConfigurationResponse"
+  /rc/nbi/infrastructure/day2/configuration/{configurationId}:
+    get:
+      tags:
+      - rcnbi-controller
+      operationId: infrastructureDay2ConfigurationStatus
+      parameters:
+      - name: configurationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InfrastructureDay2ConfigurationStatusResponse"
+  /rc/nbi/infrastructure/day2/configuration/{configurationId}/start:
+    post:
+      tags:
+      - rcnbi-controller
+      operationId: infrastructureDay2ConfigurationStart
+      parameters:
+      - name: configurationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InfrastructureDay2ConfigurationStatusResponse"
+  /rc/nbi/infrastructure/day2/configuration/{configurationId}/stop:
+    post:
+      tags:
+      - rcnbi-controller
+      operationId: infrastructureDay2ConfigurationStop
+      parameters:
+      - name: configurationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InfrastructureDay2ConfigurationStatusResponse"
+  /rc/nbi/execution:
+    post:
+      tags:
+      - rcnbi-controller
+      operationId: executionInit
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExecutionWrapper"
+        required: true
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ExecutionResponse"
+  /rc/nbi/execution/{executionId}:
+    get:
+      tags:
+      - rcnbi-controller
+      operationId: executionStatus
+      parameters:
+      - name: executionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: default response
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ExecutionStatusResponse"
+components:
+  schemas:
+    ApplicationDay2ConfigurationWrapper:
+      type: object
+      properties:
+        configurationScript:
+          type: string
+        resetConfigScript:
+          type: string
+    ApplicationDay2ConfigurationResponse:
+      type: object
+      properties:
+        configurationId:
+          type: string
+        status:
+          type: string
+          enum:
+          - INIT
+          - VALIDATING
+          - CONFIGURING
+          - COMPLETED
+          - ABORTING
+          - ABORTED
+          - STOPPING
+          - STOPPED
+          - FAILED
+          - CLEANING
+          - CLEANED
+    ApplicationDay2ConfigurationStatusResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - INIT
+          - VALIDATING
+          - CONFIGURING
+          - COMPLETED
+          - ABORTING
+          - ABORTED
+          - STOPPING
+          - STOPPED
+          - FAILED
+          - CLEANING
+          - CLEANED
+    ExecutionStatusResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - INIT
+          - RUNNING
+          - COMPLETED
+          - ABORTING
+          - ABORTED
+          - FAILED
+    InfrastructureDay2ConfigurationWrapper:
+      type: object
+      properties:
+        infrastructureMetricsInfo:
+          type: array
+          items:
+            $ref: "#/components/schemas/InfrastructureMetricWrapper"
+    InfrastructureMetricWrapper:
+      type: object
+      properties:
+        metricId:
+          type: string
+        topic:
+          type: string
+        site:
+          type: string
+        unit:
+          type: string
+        interval:
+          type: string
+        deviceId:
+          type: string
+    InfrastructureDay2ConfigurationResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - INIT
+          - VALIDATING
+          - CONFIGURING
+          - COMPLETED
+          - ABORTING
+          - ABORTED
+          - STOPPING
+          - STOPPED
+          - FAILED
+          - CLEANING
+          - CLEANED
+        configurationId:
+          type: string
+    InfrastructureDay2ConfigurationStatusResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - INIT
+          - VALIDATING
+          - CONFIGURING
+          - COMPLETED
+          - ABORTING
+          - ABORTED
+          - STOPPING
+          - STOPPED
+          - FAILED
+          - CLEANING
+          - CLEANED
+    ExecutionWrapper:
+      type: object
+      properties:
+        execScript:
+          type: string
+        executionId:
+          type: string
+    ExecutionResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - INIT
+          - RUNNING
+          - COMPLETED
+          - ABORTING
+          - ABORTED
+          - FAILED
+        executionId:
+          type: string

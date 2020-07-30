@@ -1,0 +1,6 @@
+com/telcaria/rc/core/service/RCServiceImplTest.class
+com/telcaria/rc/TestCommonData.class
+com/telcaria/rc/RcApplicationTests.class
+com/telcaria/rc/core/service/IWFSiteInventoryDataShipperClient.class
+com/telcaria/rc/core/storage/StorageServiceImplTest.class
+com/telcaria/rc/sbi/RcAnsibleTests.class
