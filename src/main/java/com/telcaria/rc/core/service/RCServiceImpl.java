@@ -1,6 +1,8 @@
 package com.telcaria.rc.core.service;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.telcaria.rc.core.events.ApplicationEventResponse;
 import com.telcaria.rc.core.events.ExecutionEventResponse;
 import com.telcaria.rc.core.events.InfrastructureEventResponse;
@@ -12,6 +14,12 @@ import com.telcaria.rc.core.wrappers.InfrastructureDay2ConfigurationEntityWrappe
 
 import com.telcaria.rc.core.wrappers.InfrastructureDay2ConfigurationScripts;
 import com.telcaria.rc.core.wrappers.Site;
+import com.telcaria.rc.core.wrappers.msno.CpProtocolInfo;
+import com.telcaria.rc.core.wrappers.msno.ExtCpInfo;
+import com.telcaria.rc.core.wrappers.msno.IpAddresses;
+import com.telcaria.rc.core.wrappers.msno.NsInstance;
+import com.telcaria.rc.core.wrappers.msno.VnfInstance;
+import com.telcaria.rc.msno.MsnoClient;
 import com.telcaria.rc.nbi.enums.Day2ConfigurationStatus;
 import com.telcaria.rc.nbi.enums.ExecutionStatus;
 import com.telcaria.rc.nbi.wrappers.ApplicationDay2ConfigurationWrapper;
@@ -21,6 +29,7 @@ import com.telcaria.rc.nbi.wrappers.InfrastructureMetricWrapper;
 import com.telcaria.rc.sbi.SBIProvider;
 import com.telcaria.rc.siteinventory.SiteInventoryDataShipperClient;
 import com.telcaria.rc.siteinventory.SiteInventorySiteClient;
+import feign.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +38,9 @@ import org.springframework.context.event.EventListener;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -40,16 +52,20 @@ public class RCServiceImpl implements RCService {
 
   private SiteInventorySiteClient siteInventorySiteClient;
 
+  private MsnoClient msnoClient;
+
   private SBIProvider sbiProvider;
 
   @Autowired
   public RCServiceImpl(StorageService storageService,
-      SiteInventoryDataShipperClient siteInventoryDataShipperClient,
-      SiteInventorySiteClient siteInventorySiteClient,
-      SBIProvider sbiProvider) {
+                       SiteInventoryDataShipperClient siteInventoryDataShipperClient,
+                       SiteInventorySiteClient siteInventorySiteClient,
+                       MsnoClient msnoClient,
+                       SBIProvider sbiProvider) {
     this.storageService = storageService;
     this.siteInventoryDataShipperClient = siteInventoryDataShipperClient;
     this.siteInventorySiteClient = siteInventorySiteClient;
+    this.msnoClient = msnoClient;
     this.sbiProvider = sbiProvider;
   }
 
@@ -101,7 +117,7 @@ public class RCServiceImpl implements RCService {
 
   @Override
   public String loadDay2Configuration(
-      InfrastructureDay2ConfigurationWrapper infrastructureDay2ConfigurationWrapper) {
+          InfrastructureDay2ConfigurationWrapper infrastructureDay2ConfigurationWrapper, String nsInstanceId) {
 
     // Create an empty InfrastructureDay2ConfigurationEntityWrapper
     InfrastructureDay2ConfigurationEntityWrapper infrastructureDay2ConfigurationEntityWrapper = new InfrastructureDay2ConfigurationEntityWrapper();
@@ -130,8 +146,34 @@ public class RCServiceImpl implements RCService {
         log.info("Data shipper received: {}", dataShipper.toString());
         Site site = ((EntityModel<Site>) siteEntityModel.getContent().toArray()[0]).getContent();
         log.info("Site received: {}", site.toString());
+
+        String ipAddressesString = "nil";
+
+        if (nsInstanceId != null) {
+          Response nsResponse = msnoClient.getNsInstance("1.0", "application/json",
+                                                         "application/json", nsInstanceId,
+                                                         true, false);
+
+          if (nsResponse != null && nsResponse.status() == 200) {
+            log.info("nsInstance received: {}", nsResponse.body().toString());
+            ObjectMapper objectMapper = new ObjectMapper();
+            NsInstance nsInstance = null;
+            try {
+              nsInstance = objectMapper.readValue(nsResponse.body().toString(), NsInstance.class);
+              List<String> ipAddresses = parseNsInstanceToListIpAddresses(nsInstance);
+              ipAddressesString = parseIpAddressListToString(ipAddresses);
+              log.info("VNF IP addresses received: {}", ipAddressesString);
+            } catch (JsonProcessingException e) {
+              log.error("Error parsing JSON response from MSNO");
+              e.printStackTrace();
+            }
+          } else {
+            log.warn("nsInstance is null");
+          }
+        }
+
         InfrastructureDay2ConfigurationScripts infrastructureDay2ConfigurationScripts = generateInfrastructureDay2ConfigurationEntityWrapper(
-                infrastructureMetricWrapper, dataShipper, site);
+                infrastructureMetricWrapper, dataShipper, site, ipAddressesString);
         //infrastructureDay2ConfigurationEntityWrapper.getConfigurationScripts().add(infrastructureDay2ConfigurationScripts.getConfigurationScript());
         //infrastructureDay2ConfigurationEntityWrapper.getStopConfigScripts().add(infrastructureDay2ConfigurationScripts.getStopConfigScript());
         log.info("Commands generated: {}", infrastructureDay2ConfigurationScripts.toString());
@@ -166,6 +208,25 @@ public class RCServiceImpl implements RCService {
     infrastructureDay2ConfigurationEntityWrapper.setStopConfigScripts(findAndReplaceSiteFacilitiesWithKafkaBroker(infrastructureDay2ConfigurationEntityWrapper.getStopConfigScripts()));
 
     return storageService.loadInfrastructureDay2Configuration(infrastructureDay2ConfigurationEntityWrapper);
+  }
+
+  private List<String> parseNsInstanceToListIpAddresses(NsInstance nsInstance) {
+    List<String> ipAddresses = new ArrayList<>();
+
+    for(VnfInstance vnfInstance : nsInstance.getVnfInstance()) {
+      for(ExtCpInfo extCpInfo : vnfInstance.getInstantiatedVnfInfo().getExtCpInfo()) {
+        for(CpProtocolInfo cpProtocolInfo : extCpInfo.getCpProtocolInfo()) {
+          for(IpAddresses ipAddresses1 : cpProtocolInfo.getIpOverEthernet().getIpAddresses()) {
+            for(String address : ipAddresses1.getAddresses()) {
+              ipAddresses.add(address);
+            }
+          }
+        }
+      }
+
+    }
+
+    return ipAddresses;
   }
 
   @Override
@@ -316,7 +377,7 @@ public class RCServiceImpl implements RCService {
 
   private InfrastructureDay2ConfigurationScripts generateInfrastructureDay2ConfigurationEntityWrapper(
       InfrastructureMetricWrapper infrastructureMetricWrapper,
-      DataShipper dataShipper, Site site) {
+      DataShipper dataShipper, Site site, String ipAddressesString) {
     InfrastructureDay2ConfigurationScripts infrastructureDay2ConfigurationScripts = new InfrastructureDay2ConfigurationScripts();
 
     if (dataShipper.getConfigurationScript() == null) {
@@ -338,6 +399,13 @@ public class RCServiceImpl implements RCService {
       } else {
         configurationScript = configurationScript.replace("$$device_id", infrastructureMetricWrapper.getDeviceId());
       }
+
+      if (!ipAddressesString.equals("nil")) {
+        configurationScript = configurationScript.replace("$$vnfIpAddresses", ipAddressesString);
+      } else {
+        configurationScript = configurationScript.replace("$$vnfIpAddresses", "");
+      }
+
       infrastructureDay2ConfigurationScripts.setConfigurationScript(configurationScript);
     }
 
@@ -360,32 +428,80 @@ public class RCServiceImpl implements RCService {
       } else {
         stopConfigScript = stopConfigScript.replace("$$device_id", infrastructureMetricWrapper.getDeviceId());
       }
+
+      if (!ipAddressesString.equals("nil")) {
+        stopConfigScript = stopConfigScript.replace("$$vnfIpAddresses", ipAddressesString);
+      } else {
+        stopConfigScript = stopConfigScript.replace("$$vnfIpAddresses", "");
+      }
+
       infrastructureDay2ConfigurationScripts.setStopConfigScript(stopConfigScript);
     }
     return infrastructureDay2ConfigurationScripts;
   }
 
-  @Override
-  public String findAndReplaceSiteFacilitiesWithKafkaBroker(String script) {
-    String siteName;
-    do {
-      siteName = null;
-      if (script.contains("ITALY_TURIN")) siteName="ITALY_TURIN";
-      if (script.contains("SPAIN_5TONIC")) siteName="SPAIN_5TONIC";
-      if (script.contains("FRANCE_PARIS")) siteName="FRANCE_PARIS";
-      if (script.contains("FRANCE_RENNES")) siteName="FRANCE_RENNES";
-      if (script.contains("FRANCE_NICE")) siteName="FRANCE_NICE";
-      if (script.contains("GREECE_ATHENS")) siteName="GREECE_ATHENS";
-      if (siteName != null) { // Retrieve KAFKA_BROKER_IP from iwf repository
-        CollectionModel<EntityModel<Site>> siteEntityModel = siteInventorySiteClient.getSite(siteName);
-        if (siteEntityModel != null && !siteEntityModel.getContent().isEmpty()) {
-          Site site = ((EntityModel<Site>) siteEntityModel.getContent().toArray()[0]).getContent();
-          script = script.replace(siteName, site.getKafkaIpAddress());
-        }
+  private String parseIpAddressListToString(List<String> ipAddresses) {
+    String ipAddressesString = "";
+
+    if (ipAddresses.size() > 0) {
+      for (String s : ipAddresses) {
+        ipAddressesString = ipAddressesString.concat(s + ",");
       }
-    } while (siteName != null);
-    return script;
+      // Remove the last char
+      ipAddressesString = ipAddressesString.substring(0, ipAddressesString.length() - 1);
+    } else {
+      ipAddressesString = "nil";
+    }
+
+    return ipAddressesString;
   }
 
+  @Override
+  public String findAndReplaceSiteFacilitiesWithKafkaBroker(String script) {
 
+    if (script.contains("__ITALY_TURIN")) { // Retrieve KAFKA_BROKER_IP from iwf repository
+      CollectionModel<EntityModel<Site>> siteEntityModel = siteInventorySiteClient.getSite("ITALY_TURIN");
+      if (siteEntityModel != null && !siteEntityModel.getContent().isEmpty()) {
+        Site site = ((EntityModel<Site>) siteEntityModel.getContent().toArray()[0]).getContent();
+        script = script.replace("__ITALY_TURIN", site.getKafkaIpAddress());
+      }
+    }
+    if (script.contains("__SPAIN_5TONIC")) { // Retrieve KAFKA_BROKER_IP from iwf repository
+      CollectionModel<EntityModel<Site>> siteEntityModel = siteInventorySiteClient.getSite("SPAIN_5TONIC");
+      if (siteEntityModel != null && !siteEntityModel.getContent().isEmpty()) {
+        Site site = ((EntityModel<Site>) siteEntityModel.getContent().toArray()[0]).getContent();
+        script = script.replace("__SPAIN_5TONIC", site.getKafkaIpAddress());
+      }
+    }
+    if (script.contains("__FRANCE_PARIS")) { // Retrieve KAFKA_BROKER_IP from iwf repository
+      CollectionModel<EntityModel<Site>> siteEntityModel = siteInventorySiteClient.getSite("FRANCE_PARIS");
+      if (siteEntityModel != null && !siteEntityModel.getContent().isEmpty()) {
+        Site site = ((EntityModel<Site>) siteEntityModel.getContent().toArray()[0]).getContent();
+        script = script.replace("__FRANCE_PARIS", site.getKafkaIpAddress());
+      }
+    }
+    if (script.contains("__FRANCE_RENNES")) { // Retrieve KAFKA_BROKER_IP from iwf repository
+      CollectionModel<EntityModel<Site>> siteEntityModel = siteInventorySiteClient.getSite("FRANCE_RENNES");
+      if (siteEntityModel != null && !siteEntityModel.getContent().isEmpty()) {
+        Site site = ((EntityModel<Site>) siteEntityModel.getContent().toArray()[0]).getContent();
+        script = script.replace("__FRANCE_RENNES", site.getKafkaIpAddress());
+      }
+    }
+    if (script.contains("__FRANCE_NICE")) { // Retrieve KAFKA_BROKER_IP from iwf repository
+      CollectionModel<EntityModel<Site>> siteEntityModel = siteInventorySiteClient.getSite("FRANCE_NICE");
+      if (siteEntityModel != null && !siteEntityModel.getContent().isEmpty()) {
+        Site site = ((EntityModel<Site>) siteEntityModel.getContent().toArray()[0]).getContent();
+        script = script.replace("__FRANCE_NICE", site.getKafkaIpAddress());
+      }
+    }
+    if (script.contains("__GREECE_ATHENS")) { // Retrieve KAFKA_BROKER_IP from iwf repository
+      CollectionModel<EntityModel<Site>> siteEntityModel = siteInventorySiteClient.getSite("GREECE_ATHENS");
+      if (siteEntityModel != null && !siteEntityModel.getContent().isEmpty()) {
+        Site site = ((EntityModel<Site>) siteEntityModel.getContent().toArray()[0]).getContent();
+        script = script.replace("__GREECE_ATHENS", site.getKafkaIpAddress());
+      }
+    }
+
+    return script;
+  }
 }

@@ -34,6 +34,9 @@ public class AnsibleSBIProvider implements SBIProvider{
   @Value("${ansible.playbooks.execute_command}")
   private String executeCommandPlaybook = "5geve-rc/execute_command/ansible/execute_command.yml";
 
+  @Value("${ansible.playbooks.execute_command_windows}")
+  private String executeCommandWindowsPlaybook = "5geve-rc/execute_command_windows/ansible/execute_command.yml";
+
   private final ApplicationEventPublisher applicationEventPublisher;
 
   @Autowired
@@ -145,6 +148,8 @@ public class AnsibleSBIProvider implements SBIProvider{
           script = ansibleCommand.generateAnsibleCommand(null);
         } else if (ansibleCommand instanceof ExecuteCommandWrapper) {
           script = ansibleCommand.generateAnsibleCommand("/usr/bin/rc/"+executeCommandPlaybook);
+        } else if (ansibleCommand instanceof ExecuteCommandWindowsWrapper) {
+          script = ansibleCommand.generateAnsibleCommand("/usr/bin/rc/" + executeCommandWindowsPlaybook);
         }
       } else { // parsing error
         log.error(String.format("parsing error in script: %s", script));
@@ -217,7 +222,8 @@ public class AnsibleSBIProvider implements SBIProvider{
     final String sleepRegex = "SLEEP ([.?\\d]+)";
     // EXECUTE_COMMAND ((?:[0-9]{1,3}\.){3}[0-9]{1,3}) ([^:]+):([^ ]+) ([]+)
     final String executeCommandRegex = "EXECUTE_COMMAND ((?:[0-9]{1,3}\\.){3}[0-9]{1,3}) ([^:]+):([^ ]+) ([^;]+)";
-
+    // EXECUTE_COMMAND_WINDOWS ((?:[0-9]{1,3}\.){3}[0-9]{1,3}) ([^:]+):([^ ]+) ([]+)
+    final String executeCommandWindowsRegex = "EXECUTE_COMMAND_WINDOWS ((?:[0-9]{1,3}\\.){3}[0-9]{1,3}) ([^:]+):([^ ]+) ([^;]+)";
 
     Pattern pattern = Pattern.compile(installFilebeatRegex, Pattern.MULTILINE);
     Matcher matcher = pattern.matcher(string);
@@ -251,6 +257,17 @@ public class AnsibleSBIProvider implements SBIProvider{
           executeCommandWrapper.setPassword(matcher.group(3));
           executeCommandWrapper.setScript(matcher.group(4));
           return executeCommandWrapper;
+        } else {
+          pattern = Pattern.compile(executeCommandWindowsRegex, Pattern.MULTILINE);
+          matcher = pattern.matcher(string);
+          if (matcher.find()) { // is it an EXECUTE_COMMAND_WINDOWS
+            ExecuteCommandWindowsWrapper executeCommandWindowsWrapper = new ExecuteCommandWindowsWrapper();
+            executeCommandWindowsWrapper.setHostIpAddress(matcher.group(1));
+            executeCommandWindowsWrapper.setUsername(matcher.group(2));
+            executeCommandWindowsWrapper.setPassword(matcher.group(3));
+            executeCommandWindowsWrapper.setScript(matcher.group(4));
+            return executeCommandWindowsWrapper;
+          }
         }
       }
     }

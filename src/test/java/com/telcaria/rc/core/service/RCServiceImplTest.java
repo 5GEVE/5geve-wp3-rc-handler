@@ -87,7 +87,7 @@ class RCServiceImplTest {
     infrastructureMetricWrappers.add(infrastructureMetricWrapper);
     infrastructureDay2ConfigurationWrapper.setInfrastructureMetricsInfo(infrastructureMetricWrappers);
 
-    String configinfraId = rcService.loadDay2Configuration(infrastructureDay2ConfigurationWrapper);
+    String configinfraId = rcService.loadDay2Configuration(infrastructureDay2ConfigurationWrapper, null);
 
     InfrastructureDay2ConfigurationEntityWrapper infrastructureDay2ConfigurationPersisted = rcService
         .getInfrastructureDay2Configuration(configinfraId);

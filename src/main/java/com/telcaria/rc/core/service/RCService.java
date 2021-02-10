@@ -26,7 +26,7 @@ public interface RCService {
 
   String loadDay2Configuration(ApplicationDay2ConfigurationWrapper applicationDay2ConfigurationWrapper);
 
-  String loadDay2Configuration(InfrastructureDay2ConfigurationWrapper infrastructureDay2ConfigurationWrapper);
+  String loadDay2Configuration(InfrastructureDay2ConfigurationWrapper infrastructureDay2ConfigurationWrapper, String nsInstanceId);
 
   void startApplicationDay2Configuration(String configurationId);
 

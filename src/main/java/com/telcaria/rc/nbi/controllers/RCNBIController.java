@@ -153,9 +153,10 @@ public class RCNBIController {
 
   // RC NBI Day-2 configuration for infrastructure metrics operations
 
-  @PostMapping(value = "/infrastructure/day2/configuration")
+  @PostMapping(value = "/infrastructure/day2/configuration/{nsInstanceId}")
   public @ResponseBody
-  InfrastructureDay2ConfigurationResponse infrastructureDay2ConfigurationInit(@RequestBody InfrastructureDay2ConfigurationWrapper day2ConfigurationWrapper) {
+  InfrastructureDay2ConfigurationResponse infrastructureDay2ConfigurationInit(@RequestBody InfrastructureDay2ConfigurationWrapper day2ConfigurationWrapper,
+                                                                              @PathVariable String nsInstanceId) {
 
     /*
      * Workflow:
@@ -166,8 +167,12 @@ public class RCNBIController {
      * - If exception - FAILED status.
      * - Return configId and status.
      */
-    log.info("Calling POST /infrastructure/day2/configuration with Body: {}", day2ConfigurationWrapper.toString());
-    String configId = rcService.loadDay2Configuration(day2ConfigurationWrapper);
+    if (nsInstanceId != null) {
+      log.info("Calling POST /infrastructure/day2/configuration/{} with Body: {}", nsInstanceId, day2ConfigurationWrapper.toString());
+    } else {
+      log.info("Calling POST /infrastructure/day2/configuration with Body: {}", day2ConfigurationWrapper.toString());
+    }
+    String configId = rcService.loadDay2Configuration(day2ConfigurationWrapper, nsInstanceId);
     if (configId != null) {
       log.info("configId: {}", configId);
       Day2ConfigurationStatus day2ConfigurationStatus = rcService
