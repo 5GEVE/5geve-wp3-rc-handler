@@ -158,8 +158,9 @@ public class RCServiceImpl implements RCService {
             log.info("nsInstance received: {}", nsResponse.body().toString());
             ObjectMapper objectMapper = new ObjectMapper();
             NsInstance nsInstance = null;
+            String nsResponseString = nsResponse.body().toString();
             try {
-              nsInstance = objectMapper.readValue(nsResponse.body().toString(), NsInstance.class);
+              nsInstance = objectMapper.readValue(nsResponseString, NsInstance.class);
               List<String> ipAddresses = parseNsInstanceToListIpAddresses(nsInstance);
               ipAddressesString = parseIpAddressListToString(ipAddresses);
               log.info("VNF IP addresses received: {}", ipAddressesString);
