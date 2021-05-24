@@ -502,6 +502,13 @@ public class RCServiceImpl implements RCService {
         script = script.replace("__GREECE_ATHENS", site.getKafkaIpAddress());
       }
     }
+    if (script.contains("__SPAIN_5GROWTH_INNOVALIA")) { // Retrieve KAFKA_BROKER_IP from iwf repository
+      CollectionModel<EntityModel<Site>> siteEntityModel = siteInventorySiteClient.getSite("SPAIN_5GROWTH_INNOVALIA");
+      if (siteEntityModel != null && !siteEntityModel.getContent().isEmpty()) {
+        Site site = ((EntityModel<Site>) siteEntityModel.getContent().toArray()[0]).getContent();
+        script = script.replace("__SPAIN_5GROWTH_INNOVALIA", site.getKafkaIpAddress());
+      }
+    }
 
     return script;
   }

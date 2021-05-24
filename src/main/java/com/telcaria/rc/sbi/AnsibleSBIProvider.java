@@ -140,16 +140,20 @@ public class AnsibleSBIProvider implements SBIProvider{
     if (!script.isEmpty() && !script.replaceAll("\\s+","").equals("")) {
       AnsibleCommand ansibleCommand = parseScript(script);
       AnsibleGenericParams ansibleGenericParams = new AnsibleGenericParams();
+      String ipAddress = "nil";
       if (ansibleCommand != null) {
         ansibleCommand.setId(ansibleEventResponse.getId()+"-"+order); // use the <config/executionId>-<number> format
         if (ansibleCommand instanceof InstallFilebeatWrapper) {
           script = ansibleCommand.generateAnsibleCommand("/usr/bin/rc/"+installFilebeatPlaybook);
+          ipAddress = ((InstallFilebeatWrapper) ansibleCommand).getHostIpAddress();
         } else if (ansibleCommand instanceof SleepWrapper) {
           script = ansibleCommand.generateAnsibleCommand(null);
         } else if (ansibleCommand instanceof ExecuteCommandWrapper) {
           script = ansibleCommand.generateAnsibleCommand("/usr/bin/rc/"+executeCommandPlaybook);
+          ipAddress = ((ExecuteCommandWrapper) ansibleCommand).getHostIpAddress();
         } else if (ansibleCommand instanceof ExecuteCommandWindowsWrapper) {
           script = ansibleCommand.generateAnsibleCommand("/usr/bin/rc/" + executeCommandWindowsPlaybook);
+          ipAddress = ((ExecuteCommandWindowsWrapper) ansibleCommand).getHostIpAddress();
         }
       } else { // parsing error
         log.error(String.format("parsing error in script: %s", script));
@@ -159,7 +163,7 @@ public class AnsibleSBIProvider implements SBIProvider{
 
       ansibleGenericParams.setScript(script);
 
-      if (!executeAnsibleGenericTemplate(ansibleGenericParams)) {
+      if (!executeAnsibleGenericTemplate(ansibleGenericParams, ipAddress)) {
         ansibleEventResponse.setSuccessful(false);
         log.error(String.format("Error executing: %s",script));
       }
@@ -167,7 +171,7 @@ public class AnsibleSBIProvider implements SBIProvider{
     return ansibleEventResponse;
   }
 
-  private boolean executeAnsibleGenericTemplate(AnsibleGenericParams ansibleGenericParams) {
+  private boolean executeAnsibleGenericTemplate(AnsibleGenericParams ansibleGenericParams, String ipAddress) {
     // Make sure you have this repository in your $HOME:
     // https://github.com/5GEVE/5geve-rc
     boolean success = false;
@@ -199,12 +203,35 @@ public class AnsibleSBIProvider implements SBIProvider{
         success = false;
       }
 
-      // Clean known_hosts file.
-      File file = new File(System.getProperty("user.home")+"/"+knownHostsPath);
-      if (file.delete()) {
-        log.info("known_hosts file has been cleaned");
-      } else {
-        log.warn("known_hosts file has not been cleaned");
+      if (!ipAddress.equals("nil")) {
+        // Remove host from SSH keygen
+        ProcessBuilder sshProcessBuilder = new ProcessBuilder("bash", "-c", "ssh-keygen -f \""
+                + System.getProperty("user.home") + "/" + knownHostsPath + "\" -R " + ipAddress);
+        Process sshProcess = sshProcessBuilder.start();
+
+        StringBuilder sshOutput = new StringBuilder();
+        BufferedReader sshInput = new BufferedReader(new InputStreamReader(sshProcess.getInputStream()));
+        String sshS = null;
+        while ((sshS = sshInput.readLine()) != null) {
+          sshOutput.append(sshS).append("\n");
+        }
+        int sshExitVal = sshProcess.waitFor();
+        if (sshExitVal == 0) {
+          log.info("SSH Keygen clean success!");
+          log.info(String.valueOf(sshOutput));
+        } else {
+          log.warn("SSH Keygen clean failure!");
+          log.warn(String.valueOf(sshOutput));
+        }
+      }
+      else {
+        // Clean known_hosts file.
+        File file = new File(System.getProperty("user.home") + "/" + knownHostsPath);
+        if (file.delete()) {
+          log.info("known_hosts file has been cleaned");
+        } else {
+          log.warn("known_hosts file has not been cleaned");
+        }
       }
 
     } catch (IOException | InterruptedException e) {
