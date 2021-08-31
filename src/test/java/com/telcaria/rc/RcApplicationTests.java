@@ -9,7 +9,12 @@ import com.telcaria.rc.core.wrappers.msno.IpAddresses;
 import com.telcaria.rc.core.wrappers.msno.NsInstance;
 import com.telcaria.rc.core.wrappers.msno.VnfInstance;
 import feign.Response;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,6 +37,7 @@ class RcApplicationTests {
 	}
 
 	@Test
+	@SneakyThrows
 	void testMsno() {
 
 		String ipAddressesString = "nil";
@@ -41,11 +47,12 @@ class RcApplicationTests {
 																											 true, false);
 
 		if (nsResponse != null && nsResponse.status() == 200) {
-			log.info("nsInstance received: {}", nsResponse.body().toString());
+			String nsResponseString = IOUtils.toString(nsResponse.body().asInputStream());
+			log.info("nsInstance received: {}", nsResponseString);
 			ObjectMapper objectMapper = new ObjectMapper();
 			NsInstance nsInstance = null;
 			try {
-				nsInstance = objectMapper.readValue(nsResponse.body().toString(), NsInstance.class);
+				nsInstance = objectMapper.readValue(nsResponseString, NsInstance.class);
 				List<String> ipAddresses = parseNsInstanceToListIpAddresses(nsInstance);
 				ipAddressesString = parseIpAddressListToString(ipAddresses);
 				log.info("VNF IP addresses received: {}", ipAddressesString);
@@ -80,7 +87,7 @@ class RcApplicationTests {
 	}
 
 	@Test
-	void testMsnoCompare() {
+	void testMsnoCompare() throws IOException {
 
 		String ipAddressesString = "nil";
 
@@ -91,17 +98,17 @@ class RcApplicationTests {
 		String nsResponseString = "{\"id\":\"79097c9c-b96e-40c4-8824-e71ef742c2e0\",\"nsInstanceDescription\":\"NFV NS instance for experiment 378d9a16-57d2-458a-9761-61e325077cad\",\"nsInstanceName\":\"NS_exp_378d9a16-57d2-458a-9761-61e325077cad\",\"nsState\":\"INSTANTIATED\",\"nsdId\":\"0afe98b3-a15b-3ae3-93f3-1e67cd7bac30\",\"nsdInfoId\":\"\",\"vnfInstance\":[{\"id\":\"267c4e02-0e59-4e73-9c95-b3793df095cc\",\"instantiatedVnfInfo\":{\"extCpInfo\":[{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"10.50.80.68\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:23:71:2b\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_remote_controller_mgmt\",\"id\":\"cp_remote_controller_mgmt\"},{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"192.168.0.3\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:89:bf:6f\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_remote_controller_data\",\"id\":\"cp_remote_controller_data\"},{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"10.50.160.21\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:22:94:0e\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_remote_controller_ext_mobile\",\"id\":\"cp_remote_controller_ext_mobile\"},{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"192.168.186.20\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:5c:f1:e3\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_remote_controller_user\",\"id\":\"cp_remote_controller_user\"}],\"flavourId\":\"\",\"vnfState\":\"STARTED\"},\"instantiationState\":\"INSTANTIATED\",\"vimId\":\"c5060169-8305-4ce0-9b37-9eaca59c42f4\",\"vnfPkgId\":\"\",\"vnfProductName\":\"\",\"vnfProvider\":\"\",\"vnfSoftwareVersion\":\"\",\"vnfdId\":\"ce542fc9-3e6f-4baf-8698-c5da7dfaf8dc\",\"vnfdVersion\":\"\"},{\"id\":\"8158565f-a760-4bc3-a8cf-af151ce07b3d\",\"instantiatedVnfInfo\":{\"extCpInfo\":[{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"10.50.80.62\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:58:3a:4b\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_dg_mgmt\",\"id\":\"cp_dg_mgmt\"},{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"10.50.160.41\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:e9:67:52\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_dg_traffic_in\",\"id\":\"cp_dg_traffic_in\"},{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"192.168.90.3\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:30:d1:3e\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_dg_traffic_out\",\"id\":\"cp_dg_traffic_out\"}],\"flavourId\":\"\",\"vnfState\":\"STARTED\"},\"instantiationState\":\"INSTANTIATED\",\"vimId\":\"c5060169-8305-4ce0-9b37-9eaca59c42f4\",\"vnfPkgId\":\"\",\"vnfProductName\":\"\",\"vnfProvider\":\"\",\"vnfSoftwareVersion\":\"\",\"vnfdId\":\"396d1b6b-331b-4dd7-b48e-376517d3654a\",\"vnfdVersion\":\"\"}]}";
 
 		if (nsResponse != null && nsResponse.status() == 200) {
-			log.info("nsInstance received: {}", nsResponse.body().toString());
-			log.info("nsInstanceString received: {}", nsResponseString);
+			log.info("nsInstance received: {}", IOUtils.toString(nsResponse.body().asInputStream()));
+			log.info("nsInstanceString expected: {}", nsResponseString);
 
-			boolean compareBoth = nsResponseString.equals(nsResponse.body().toString());
+			boolean compareBoth = nsResponseString.equals(IOUtils.toString(nsResponse.body().asInputStream()));
 
 			log.info("Comparison: {}", compareBoth);
 		}
 	}
 
 	@Test
-	void testMsno3() {
+	void testMsno3() throws IOException {
 
 		String ipAddressesString = "nil";
 
@@ -111,11 +118,11 @@ class RcApplicationTests {
 		String nsResponseString = "{\"id\":\"79097c9c-b96e-40c4-8824-e71ef742c2e0\",\"nsInstanceDescription\":\"NFV NS instance for experiment 378d9a16-57d2-458a-9761-61e325077cad\",\"nsInstanceName\":\"NS_exp_378d9a16-57d2-458a-9761-61e325077cad\",\"nsState\":\"INSTANTIATED\",\"nsdId\":\"0afe98b3-a15b-3ae3-93f3-1e67cd7bac30\",\"nsdInfoId\":\"\",\"vnfInstance\":[{\"id\":\"267c4e02-0e59-4e73-9c95-b3793df095cc\",\"instantiatedVnfInfo\":{\"extCpInfo\":[{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"10.50.80.68\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:23:71:2b\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_remote_controller_mgmt\",\"id\":\"cp_remote_controller_mgmt\"},{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"192.168.0.3\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:89:bf:6f\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_remote_controller_data\",\"id\":\"cp_remote_controller_data\"},{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"10.50.160.21\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:22:94:0e\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_remote_controller_ext_mobile\",\"id\":\"cp_remote_controller_ext_mobile\"},{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"192.168.186.20\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:5c:f1:e3\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_remote_controller_user\",\"id\":\"cp_remote_controller_user\"}],\"flavourId\":\"\",\"vnfState\":\"STARTED\"},\"instantiationState\":\"INSTANTIATED\",\"vimId\":\"c5060169-8305-4ce0-9b37-9eaca59c42f4\",\"vnfPkgId\":\"\",\"vnfProductName\":\"\",\"vnfProvider\":\"\",\"vnfSoftwareVersion\":\"\",\"vnfdId\":\"ce542fc9-3e6f-4baf-8698-c5da7dfaf8dc\",\"vnfdVersion\":\"\"},{\"id\":\"8158565f-a760-4bc3-a8cf-af151ce07b3d\",\"instantiatedVnfInfo\":{\"extCpInfo\":[{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"10.50.80.62\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:58:3a:4b\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_dg_mgmt\",\"id\":\"cp_dg_mgmt\"},{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"10.50.160.41\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:e9:67:52\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_dg_traffic_in\",\"id\":\"cp_dg_traffic_in\"},{\"cpProtocolInfo\":[{\"ipOverEthernet\":{\"addressRange\":{\"maxAddress\":\"\",\"minAddress\":\"\"},\"ipAddresses\":[{\"addresses\":[\"192.168.90.3\"],\"type\":\"IPV4\"}],\"macAddress\":\"fa:16:3e:30:d1:3e\"},\"layerProtocol\":\"IP_OVER_ETHERNET\"}],\"cpdId\":\"cp_dg_traffic_out\",\"id\":\"cp_dg_traffic_out\"}],\"flavourId\":\"\",\"vnfState\":\"STARTED\"},\"instantiationState\":\"INSTANTIATED\",\"vimId\":\"c5060169-8305-4ce0-9b37-9eaca59c42f4\",\"vnfPkgId\":\"\",\"vnfProductName\":\"\",\"vnfProvider\":\"\",\"vnfSoftwareVersion\":\"\",\"vnfdId\":\"396d1b6b-331b-4dd7-b48e-376517d3654a\",\"vnfdVersion\":\"\"}]}";
 
 		if (nsResponse != null && nsResponse.status() == 200) {
-			log.info("nsInstance received: {}", nsResponseString);
+			log.info("nsInstanceStream expected: {}", nsResponseString);
 			ObjectMapper objectMapper = new ObjectMapper();
 			NsInstance nsInstance = null;
 			try {
-				String responseStream = nsResponse.body().toString();
+				String responseStream = IOUtils.toString(nsResponse.body().asInputStream());
 				log.info("nsInstanceStream received: {}", responseStream);
 
 				boolean compareBoth = nsResponseString.equals(responseStream);

@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.telcaria</groupId>
 	<artifactId>rc</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.33</version>
 	<name>rc</name>
 	<description>Runtime Configurator</description>
 

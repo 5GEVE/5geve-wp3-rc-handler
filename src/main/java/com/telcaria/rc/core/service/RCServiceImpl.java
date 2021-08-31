@@ -2,6 +2,7 @@ package com.telcaria.rc.core.service;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.telcaria.rc.core.events.ApplicationEventResponse;
 import com.telcaria.rc.core.events.ExecutionEventResponse;
@@ -11,7 +12,6 @@ import com.telcaria.rc.core.wrappers.ApplicationDay2ConfigurationEntityWrapper;
 import com.telcaria.rc.core.wrappers.DataShipper;
 import com.telcaria.rc.core.wrappers.ExecutionEntityWrapper;
 import com.telcaria.rc.core.wrappers.InfrastructureDay2ConfigurationEntityWrapper;
-
 import com.telcaria.rc.core.wrappers.InfrastructureDay2ConfigurationScripts;
 import com.telcaria.rc.core.wrappers.Site;
 import com.telcaria.rc.core.wrappers.msno.CpProtocolInfo;
@@ -30,17 +30,17 @@ import com.telcaria.rc.sbi.SBIProvider;
 import com.telcaria.rc.siteinventory.SiteInventoryDataShipperClient;
 import com.telcaria.rc.siteinventory.SiteInventorySiteClient;
 import feign.Response;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.context.event.EventListener;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -155,18 +155,19 @@ public class RCServiceImpl implements RCService {
                                                          true, false);
 
           if (nsResponse != null && nsResponse.status() == 200) {
-            log.info("nsInstance received: {}", nsResponse.body().toString());
-            ObjectMapper objectMapper = new ObjectMapper();
-            NsInstance nsInstance = null;
-            String nsResponseString = nsResponse.body().toString();
             try {
-              nsInstance = objectMapper.readValue(nsResponseString, NsInstance.class);
+              String nsResponseString = IOUtils.toString(nsResponse.body().asInputStream());
+              log.info("nsInstance received: {}", nsResponseString);
+              ObjectMapper objectMapper = new ObjectMapper();
+              objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+              NsInstance nsInstance = objectMapper.readValue(nsResponseString, NsInstance.class);
               List<String> ipAddresses = parseNsInstanceToListIpAddresses(nsInstance);
               ipAddressesString = parseIpAddressListToString(ipAddresses);
               log.info("VNF IP addresses received: {}", ipAddressesString);
             } catch (JsonProcessingException e) {
-              log.error("Error parsing JSON response from MSNO");
-              e.printStackTrace();
+              log.error("Error parsing JSON response from MSNO", e);
+            } catch (IOException e) {
+              log.error("IO error reading response from MSNO", e);
             }
           } else {
             log.warn("nsInstance is null");
@@ -214,17 +215,18 @@ public class RCServiceImpl implements RCService {
   private List<String> parseNsInstanceToListIpAddresses(NsInstance nsInstance) {
     List<String> ipAddresses = new ArrayList<>();
 
-    for(VnfInstance vnfInstance : nsInstance.getVnfInstance()) {
-      for(ExtCpInfo extCpInfo : vnfInstance.getInstantiatedVnfInfo().getExtCpInfo()) {
-        for(CpProtocolInfo cpProtocolInfo : extCpInfo.getCpProtocolInfo()) {
-          for(IpAddresses ipAddresses1 : cpProtocolInfo.getIpOverEthernet().getIpAddresses()) {
-            for(String address : ipAddresses1.getAddresses()) {
-              ipAddresses.add(address);
+    try {
+      for (VnfInstance vnfInstance : nsInstance.getVnfInstance()) {
+        for (ExtCpInfo extCpInfo : vnfInstance.getInstantiatedVnfInfo().getExtCpInfo()) {
+          for (CpProtocolInfo cpProtocolInfo : extCpInfo.getCpProtocolInfo()) {
+            for (IpAddresses ipAddresses1 : cpProtocolInfo.getIpOverEthernet().getIpAddresses()) {
+              ipAddresses.addAll(ipAddresses1.getAddresses());
             }
           }
         }
       }
-
+    } catch (NullPointerException e) {
+      log.warn("Null value while parsing IP addresses, ignoring");
     }
 
     return ipAddresses;
